@@ -7,4 +7,7 @@ categoricalIndices = [1, 2, 3, 4, 5, 6, 8]
 
 test = KNN()
 
-test.Train(trainData, categoricalIndices)
+test.train(trainData, categoricalIndices)
+print(test.trainData[0])
+
+

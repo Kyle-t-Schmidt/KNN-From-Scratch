@@ -5,16 +5,19 @@ class KNN:
 
     def __init__(self):
         self.featureMap = {}
+        self.classifications = []
+        # self.trainData also exists but cannot be defined until the number of
+        # features is known.
 
 
-    def Train(self, TrainDataCsvFile, IndexList):
+    def train(self, TrainDataCsvFile, IndexList):
         """Converts csv file to a Numpy array to be used in KNN Algorithm.
-        Categorical columns, given as a list of indices, are
+        non-numerical columns, given as a list of indices, are
         one-hot encoded.
 
         Args:
-            TrainCsvFile ([Str]):  a path to a csv file.
-            IndexList ([List]): A list of indices of columns to be one-hot
+            TrainCsvFile (Str): Path to training data csv file.
+            IndexList (List): A list of indices of columns to be one-hot
             encoded.
         """
         # Import data as plain text from file, separate each line on comma, and
@@ -28,7 +31,6 @@ class KNN:
         # the vlaues in their respective list.
         numerical = []
         categorical = []
-        classifications = []
 
         for row in data:
             row_num = []
@@ -36,7 +38,7 @@ class KNN:
             
             for index, value in enumerate(row):
                 if index == len(row)-1:
-                    classifications.append([value])
+                    self.classifications.append([value])
                 elif index in IndexList:
                     row_cat.append(value)
                 else:
@@ -68,17 +70,25 @@ class KNN:
             for feature in row:
                 oneHot[index][feature] = 1
 
-        
-        print(oneHot)
+        # Append the numerical data that was not one-hot encoded to each line
+        # of the one-hot data. This brings all the data back together.
+        numerical = np.array(numerical, dtype=int)
+        self.trainData = np.concatenate((numerical,oneHot), axis=1)
+
+        print('Preprocessing complete')
 
 
-    def Predict(self, NewData):
-        """Returns predictions on a test dataset. If actual classifications are
-        present they should be in the last column. MSE will be returned if 
-        actual classifications exist.
+    def Predict(self, K, TestDataCsvFile, includesClassifications=False):
+        """Predicts the classification of each row in the csv file based on the
+        K nearest neighbors. K must be an odd number. If the dataset includes
+        classifications, set includesClassifications to true. The
+        classifications must be the last column in the csv file.
 
         Args:
-            TestData ([Numpy Array]): [description]
-            TrainObject ([Numpy Array]): [description]
+            K (int): Number of nearest neighbors. Must be odd.
+            TestDataCsvFile (Str): Path to csv file.
+            includesClassifications (boolean): If the csv file contains 
+            classifications, set to true.
         """
-        pass
+        if (K % 2 == 0) or isinstance(K, float):
+            return 'K must be an odd integer'
