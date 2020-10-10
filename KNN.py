@@ -166,7 +166,7 @@ class knn:
         self.testData = np.concatenate((numerical,oneHot), axis=1)
            
 
-    def predict(K):
+    def predict(self, K):
         """Predicts the clasifications of the test dataset using K nearest
         neighbors with euclidean distance. 
 
@@ -175,5 +175,31 @@ class knn:
             prediction
         """
 
-        # Calculate the euclidean distance of each test point from each train
-        # point.
+        # Calculate the euclidean distance from a test point from each train
+        # point and add it to the list distances.
+
+        for testRow in self.testData:
+            distances = []
+            counter = 0
+
+            for index, trainRow in enumerate(self.trainData):
+
+                while counter < K:
+                    distances.append((index, np.linalg.norm(testRow-trainRow)))
+                    counter += 1
+
+                    if counter == K:
+                        distances.sort(key = lambda x: x[1])
+                        
+                distance = np.linalg.norm(testRow-trainRow)
+                
+                if distance < distances[-1][1]:
+                    distances.append((index, distance))
+                    distances.sort(key = lambda x: x[1])
+
+            # at this point I have list of tuples (index, euc distance), now I
+            # need to find classifications and determine prediction.
+
+
+                
+
