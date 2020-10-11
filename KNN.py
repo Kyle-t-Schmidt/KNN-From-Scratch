@@ -198,7 +198,23 @@ class knn:
                     distances.sort(key = lambda x: x[1])
 
             # at this point I have list of tuples (index, euc distance), now I
-            # need to find classifications and determine prediction.
+            # need to find classifications of each of the nearest neighbors
+
+            nearestneighbors = []
+
+            for tup in distances:
+                nearestneighbors.append(self.trainClassifications[tup[0]])
+
+            # get counts of each classification.
+            nnDict = {}
+            for classification in nearestneighbors:
+                if classification not in nnDict.keys:
+                    nnDict[classification] = 1
+                else:
+                    nnDict[classification] += 1
+
+            
+
 
 
                 
