@@ -164,6 +164,8 @@ class knn:
         # of the one-hot data. This brings all the data back together.
         numerical = np.array(numerical, dtype=int)
         self.testData = np.concatenate((numerical,oneHot), axis=1)
+
+        print('Preprocessing complete')
            
 
     def predict(self, K):
@@ -175,47 +177,13 @@ class knn:
             prediction
         """
 
-        # Calculate the euclidean distance from a test point from each train
-        # point and add it to the list distances.
-
-        for testRow in self.testData:
+        for i in range(len(self.testData)):
             distances = []
             counter = 0
 
-            for index, trainRow in enumerate(self.trainData):
+            for j in range(len(self.trainData)):
 
-                while counter < K:
-                    distances.append((index, np.linalg.norm(testRow-trainRow)))
+                if counter < K:
+                    distances.append((j, np.linalg.norm(self.trainData[j]-self.testData[i])))
                     counter += 1
-
-                    if counter == K:
-                        distances.sort(key = lambda x: x[1])
-                        
-                distance = np.linalg.norm(testRow-trainRow)
-                
-                if distance < distances[-1][1]:
-                    distances.append((index, distance))
-                    distances.sort(key = lambda x: x[1])
-
-            # at this point I have list of tuples (index, euc distance), now I
-            # need to find classifications of each of the nearest neighbors
-
-            nearestneighbors = []
-
-            for tup in distances:
-                nearestneighbors.append(self.trainClassifications[tup[0]])
-
-            # get counts of each classification.
-            nnDict = {}
-            for classification in nearestneighbors:
-                if classification not in nnDict.keys:
-                    nnDict[classification] = 1
-                else:
-                    nnDict[classification] += 1
-
-            
-
-
-
-                
-
+                    print(distances)
