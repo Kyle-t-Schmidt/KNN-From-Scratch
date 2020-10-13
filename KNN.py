@@ -44,7 +44,7 @@ class knn:
             
             for index, value in enumerate(row):
                 if index == len(row)-1:
-                    self.trainClassifications.append([value])
+                    self.trainClassifications.append(value)
                 elif index in self.indexList:
                     row_cat.append(value)
                 else:
@@ -81,7 +81,7 @@ class knn:
         numerical = np.array(numerical, dtype=int)
         self.trainData = np.concatenate((numerical,oneHot), axis=1)
 
-        print('Preprocessing complete')
+        print('Train Preprocessing complete')
 
 
     def testDataProcess(self, TestDataCsvFile, Classifications=False):
@@ -165,7 +165,7 @@ class knn:
         numerical = np.array(numerical, dtype=int)
         self.testData = np.concatenate((numerical,oneHot), axis=1)
 
-        print('Preprocessing complete')
+        print('Test Preprocessing complete')
            
 
     def predict(self, K):
@@ -177,13 +177,35 @@ class knn:
             prediction
         """
 
+
+        # We need to calculate the euclidean distance for each test datapoint
+        # to each train datapoint.
         for i in range(len(self.testData)):
             distances = []
             counter = 0
 
             for j in range(len(self.trainData)):
 
+                distance = np.linalg.norm(self.trainData[j]-self.testData[i])
+                
+                # to prevent having to sort a list of all the euclidean
+                # distances I will only makes a list with length K and only add
+                # a new value to the list if it is one of the top K nearest
+                # neighbors
                 if counter < K:
-                    distances.append((j, np.linalg.norm(self.trainData[j]-self.testData[i])))
+                    distances.append((j, distance))
                     counter += 1
-                    print(distances)
+                    continue
+                
+                if (distance < distances[-1][1]) and j:
+                    distances.append((j, distance))
+                    distances.sort(key=lambda x: x[1])
+                    del distances[-1]
+                    
+                # after iterating through each row in the traindata determine
+                # the classification for each of the K nearest neighbors and 
+                # create a dictionary of the counts of each classification
+ 
+
+                # determine the classification of the test row
+
