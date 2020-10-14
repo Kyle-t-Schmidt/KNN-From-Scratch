@@ -8,6 +8,7 @@ class knn:
         self.trainClassifications = []
         self.newClassifications = []
         self.indexList = []
+        self.predictions = []
         # self.trainData and self.testData also exist but cannot be defined
         # until after the the number of features is known.
 
@@ -117,7 +118,7 @@ class knn:
             if Classifications:
                 for index, value in enumerate(row):
                     if index == len(row)-1:
-                        self.newClassifications.append([value])
+                        self.newClassifications.append(value)
                     elif index in self.indexList:
                         row_cat.append(value)
                     else:
@@ -197,15 +198,35 @@ class knn:
                     counter += 1
                     continue
                 
-                if (distance < distances[-1][1]) and j:
+                if (distance < distances[-1][1]):
                     distances.append((j, distance))
                     distances.sort(key=lambda x: x[1])
                     del distances[-1]
                     
                 # after iterating through each row in the traindata determine
-                # the classification for each of the K nearest neighbors and 
-                # create a dictionary of the counts of each classification
- 
+                # the classification for each of the K nearest neighbors
+                if j == len(self.trainData) - 1:
+                    cls = []
+                    for tup in distances:
+                        indx = tup[0]
+                        cls.append(self.trainClassifications[indx])
+                        
+                    # determine which classification has the most "votes" and 
+                    # add it to the new classifications list
+                    result = max(set(reversed(cls)), key=cls.count)
+                    self.predictions.append(result)
+        
+        # If test classification are present print out the rate of correct
+        # classifications
+        if self.newClassifications:
+            correct = 0
 
-                # determine the classification of the test row
+            for i, j in enumerate(self.newClassifications):
+                if j == self.predictions[i]:
+                    correct += 1
 
+            totalClass = len(self.newClassifications)
+            print('---')
+            print('Correct classifications: ' + str(correct))
+            print('Incorrect classifications: ' + str((totalClass- correct)))
+            print('Percent correct: ' + str((100*correct/(totalClass))))

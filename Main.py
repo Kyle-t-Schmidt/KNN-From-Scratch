@@ -12,5 +12,3 @@ test.trainDataProcess(trainData, categoricalIndices)
 test.testDataProcess(testData, True)
 
 test.predict(5)
-
-print(test.newClassifications)
