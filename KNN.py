@@ -1,7 +1,8 @@
 import numpy as np
+from dataPreProcess import dataPreProcess
+
 
 class knn:
-
 
     def __init__(self):
         self.featureMap = {}
@@ -9,8 +10,8 @@ class knn:
         self.newClassifications = []
         self.indexList = []
         self.predictions = []
-        # self.trainData and self.testData also exist but cannot be defined
-        # until after the the number of features is known.
+        self.trainData = np.empty(0)
+        self.testData = np.empty(0)
 
 
     def trainDataProcess(self, TrainDataCsvFile, IndexList):
@@ -24,13 +25,12 @@ class knn:
             encoded.
         """
 
-
         self.indexList = IndexList
 
         # Import data as plain text from file, separate each line on comma, and
         # Strip any leading/trailing spaces or /n's.
-        data = [line.strip().split(",") for line in open(TrainDataCsvFile)\
-            .readlines()]
+        data = [line.strip().split(",") for line in open(TrainDataCsvFile)
+                .readlines()]
 
         # Separate the numerical values from the categorical values (as given
         # in the indexList) and separate the classifications into a third list.
@@ -42,7 +42,7 @@ class knn:
         for row in data:
             row_num = []
             row_cat = []
-            
+
             for index, value in enumerate(row):
                 if index == len(row)-1:
                     self.trainClassifications.append(value)
@@ -50,23 +50,17 @@ class knn:
                     row_cat.append(value)
                 else:
                     row_num.append(value)
-                
+
             numerical.append(row_num)
             categorical.append(row_cat)
 
-        
-        # Create a feature map for the non-numerical variables so we can 
-        # One-hot encode (make binary) these features.
-        newData = []
+        # Create a feature map and label encode the non-numerical variables
+        preProc = dataPreProcess()
 
-        for row in categorical:
-            newRow = []
-            for index, value in enumerate(row):
-                feature = (index, value)
-                if feature not in self.featureMap:
-                    self.featureMap[feature] = len(self.featureMap)
-                newRow.append(self.featureMap[feature])
-            newData.append(newRow)
+        preProc.featureMap(categorical)
+
+        self.featureMap = preProc.featMap
+        newData = preProc.labelEncoded
 
         # Create a blank numpy array equal to the length of the dataset and the
         # width equal to the number of features. Use the feature map to
@@ -80,10 +74,9 @@ class knn:
         # Append the numerical data that was not one-hot encoded to each line
         # of the one-hot data. This brings all the data back together.
         numerical = np.array(numerical, dtype=int)
-        self.trainData = np.concatenate((numerical,oneHot), axis=1)
+        self.trainData = np.concatenate((numerical, oneHot), axis=1)
 
         print('Train Preprocessing complete')
-
 
     def testDataProcess(self, TestDataCsvFile, Classifications=False):
         """Converts csv file to a Numpy array to be used in KNN Algorithm.
@@ -92,16 +85,14 @@ class knn:
 
         Args:
             TestDataCsvFile (Str): Path to csv file.
-            Classifications (boolean): If the csv file contains 
+            Classifications (boolean): If the csv file contains
             classifications, set to true.
         """
 
-
-        
         # Import data as plain text from file, separate each line on comma,
         #  and strip any leading/trailing spaces or /n's.
-        data = [line.strip().split(",") for line in open(TestDataCsvFile)\
-            .readlines()]
+        data = [line.strip().split(",") for line in open(TestDataCsvFile)
+                .readlines()]
 
         # Separate the numerical values from the non-numerical values (as
         # given in the indexList) and separate the classifications into a
@@ -113,7 +104,7 @@ class knn:
         for row in data:
             row_num = []
             row_cat = []
-            
+
             # If the test data contains classifications:
             if Classifications:
                 for index, value in enumerate(row):
@@ -123,7 +114,7 @@ class knn:
                         row_cat.append(value)
                     else:
                         row_num.append(value)
-                    
+
                 numerical.append(row_num)
                 categorical.append(row_cat)
 
@@ -134,12 +125,11 @@ class knn:
                         row_cat.append(value)
                     else:
                         row_num.append(value)
-                    
+
                 numerical.append(row_num)
                 categorical.append(row_cat)
 
-        
-        # use the feature map to One-hot encode (make binary) the test 
+        # use the feature map to One-hot encode (make binary) the test
         # features.
         newData = []
 
@@ -164,20 +154,18 @@ class knn:
         # Append the numerical data that was not one-hot encoded to each line
         # of the one-hot data. This brings all the data back together.
         numerical = np.array(numerical, dtype=int)
-        self.testData = np.concatenate((numerical,oneHot), axis=1)
+        self.testData = np.concatenate((numerical, oneHot), axis=1)
 
         print('Test Preprocessing complete')
-           
 
     def predict(self, K):
         """Predicts the clasifications of the test dataset using K nearest
-        neighbors with euclidean distance. 
+        neighbors with euclidean distance.
 
         Args:
-            K (int): number of nearest neighbors to use for classification 
+            K (int): number of nearest neighbors to use for classification
             prediction
         """
-
 
         # We need to calculate the euclidean distance for each test datapoint
         # to each train datapoint.
@@ -188,7 +176,7 @@ class knn:
             for j in range(len(self.trainData)):
 
                 distance = np.linalg.norm(self.trainData[j]-self.testData[i])
-                
+
                 # to prevent having to sort a list of all the euclidean
                 # distances I will only makes a list with length K and only add
                 # a new value to the list if it is one of the top K nearest
@@ -197,12 +185,12 @@ class knn:
                     distances.append((j, distance))
                     counter += 1
                     continue
-                
+
                 if (distance < distances[-1][1]):
                     distances.append((j, distance))
                     distances.sort(key=lambda x: x[1])
                     del distances[-1]
-                    
+
                 # after iterating through each row in the traindata determine
                 # the classification for each of the K nearest neighbors
                 if j == len(self.trainData) - 1:
@@ -210,12 +198,12 @@ class knn:
                     for tup in distances:
                         indx = tup[0]
                         cls.append(self.trainClassifications[indx])
-                        
-                    # determine which classification has the most "votes" and 
+
+                    # determine which classification has the most "votes" and
                     # add it to the new classifications list
                     result = max(set(reversed(cls)), key=cls.count)
                     self.predictions.append(result)
-        
+
         # If test classification are present print out the rate of correct
         # classifications
         if self.newClassifications:
@@ -228,5 +216,5 @@ class knn:
             totalClass = len(self.newClassifications)
             print('---')
             print('Correct classifications: ' + str(correct))
-            print('Incorrect classifications: ' + str((totalClass- correct)))
+            print('Incorrect classifications: ' + str((totalClass - correct)))
             print('Percent correct: ' + str((100*correct/(totalClass))))
