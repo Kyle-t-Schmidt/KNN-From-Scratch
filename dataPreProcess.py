@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class dataPreProcess:
 
 
@@ -22,3 +25,19 @@ class dataPreProcess:
                     self.featMap[feature] = len(self.featMap)
                 newRow.append(self.featMap[feature])
             self.labelEncoded.append(newRow)
+
+    def oneHot(self):
+        """Converts label encoded data to one-hot encoded data.
+
+        Returns:
+            numpy array: a numpy array on the one hot encoded conversion from
+            the given label encoded data.
+        """
+
+        oneHot = np.zeros((len(self.labelEncoded), len(self.featMap)))
+
+        for index, row in enumerate(self.labelEncoded):
+            for feature in row:
+                oneHot[index][feature] = 1
+
+        return oneHot

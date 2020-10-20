@@ -62,14 +62,8 @@ class knn:
         self.featureMap = preProc.featMap
         newData = preProc.labelEncoded
 
-        # Create a blank numpy array equal to the length of the dataset and the
-        # width equal to the number of features. Use the feature map to
         # generate the one-hot encoded data.
-        oneHot = np.zeros((len(newData), len(self.featureMap)))
-
-        for index, row in enumerate(newData):
-            for feature in row:
-                oneHot[index][feature] = 1
+        oneHot = preProc.oneHot()
 
         # Append the numerical data that was not one-hot encoded to each line
         # of the one-hot data. This brings all the data back together.
