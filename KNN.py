@@ -13,7 +13,6 @@ class knn:
         self.trainData = np.empty(0)
         self.testData = np.empty(0)
 
-
     def trainDataProcess(self, TrainDataCsvFile, IndexList):
         """Converts csv file to a Numpy array to be used in KNN Algorithm.
         non-numerical columns, given as a list of indices, are
@@ -54,16 +53,16 @@ class knn:
             numerical.append(row_num)
             categorical.append(row_cat)
 
-        # Create a feature map and label encode the non-numerical variables
+        # Create a feature map
         preProc = dataPreProcess()
 
-        preProc.featureMap(categorical)
+        self.featureMap = preProc.featureMap(categorical)
 
-        self.featureMap = preProc.featMap
-        newData = preProc.labelEncoded
+        # Label encode the non-numerical data
+        newData = preProc.labelEncode(self.featureMap, categorical)
 
         # generate the one-hot encoded data.
-        oneHot = preProc.oneHot()
+        oneHot = preProc.oneHot(newData, self.featureMap)
 
         # Append the numerical data that was not one-hot encoded to each line
         # of the one-hot data. This brings all the data back together.
@@ -123,27 +122,13 @@ class knn:
                 numerical.append(row_num)
                 categorical.append(row_cat)
 
-        # use the feature map to One-hot encode (make binary) the test
-        # features.
-        newData = []
+        # use the feature map to label encode the non-numerical data
+        preProc = dataPreProcess()
 
-        for row in categorical:
-            newRow = []
-            for index, value in enumerate(row):
-                feature = (index, value)
-                if feature not in self.featureMap:
-                    continue
-                newRow.append(self.featureMap[feature])
-            newData.append(newRow)
+        newData = preProc.labelEncode(self.featureMap, categorical)
 
-        # Create a blank numpy array equal to the length of the dataset and
-        #  the width equal to the number of features. Use the feature map
-        # to generate the one-hot encoded data.
-        oneHot = np.zeros((len(newData), len(self.featureMap)))
-
-        for index, row in enumerate(newData):
-            for feature in row:
-                oneHot[index][feature] = 1
+        # generate the one-hot encoded data.
+        oneHot = preProc.oneHot(newData, self.featureMap)
 
         # Append the numerical data that was not one-hot encoded to each line
         # of the one-hot data. This brings all the data back together.

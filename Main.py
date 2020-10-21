@@ -1,9 +1,9 @@
 from KNN import knn
 
 
-trainData = r'/home/kyle/GitHub/KNN-From-Scratch/income.train.txt.5k'
-testData = r'/home/kyle/GitHub/KNN-From-Scratch/income.dev.txt'
-categoricalIndices = [1, 2, 3, 4, 5, 6, 8]
+trainData = <path to train data>
+testData = <path to test data>
+categoricalIndices = <list of indices of any non-numerical rows>
 
 test = knn()
 
